@@ -1,0 +1,28 @@
+// ignore_for_file: avoid_print
+import 'package:another_contact_channel/pages/battery_level_chanel_page.dart';
+import 'package:another_contact_channel/pages/check_connection_channel_page.dart';
+import 'package:another_contact_channel/pages/contact_picker_channel_page.dart';
+import 'package:another_contact_channel/pages/get_contacts_channel_page.dart';
+import 'package:another_contact_channel/pages/home_page.dart';
+import 'package:flutter/material.dart';
+
+void main() => runApp(const MyApp());
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);  
+  
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      initialRoute: '/',
+      routes: {
+        '/': (_) => const HomePage(),
+        '/contact_channel': (_) => const GetContactsChannelPage(),
+        '/battery_channel': (_) => const BatteryLevelChannelPage(),
+        '/connection_channel': (_) => const CheckConnectionChannelPage(),
+        '/contact_picker_channel': (_) =>const ContactPickerChannelPage()
+      },
+    );
+  }
+}
