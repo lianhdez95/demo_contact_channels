@@ -3,15 +3,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class BatteryLevelChannelPage extends StatefulWidget {
-  const BatteryLevelChannelPage({super.key});
+class BatteryStatusChannelPage extends StatefulWidget {
+  const BatteryStatusChannelPage({super.key});
 
   @override
   // ignore: library_private_types_in_public_api
-  _BatteryStatusPageState createState() => _BatteryStatusPageState();
+  _BatteryStatusChannelPageState createState() => _BatteryStatusChannelPageState();
 }
 
-class _BatteryStatusPageState extends State<BatteryLevelChannelPage> {
+class _BatteryStatusChannelPageState extends State<BatteryStatusChannelPage> {
   static const batteryPlatform = MethodChannel('com.example.battery');
   String _batteryStatus = '';
 
@@ -50,9 +50,18 @@ class _BatteryStatusPageState extends State<BatteryLevelChannelPage> {
         title: const Text('Battery Channel'),
       ),
       body: Center(
-        child: Text(
-          _batteryStatus,
-          style: const TextStyle(fontSize: 30),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.battery_5_bar_rounded, color: Colors.blue, size: 100,),
+
+            SizedBox(height: 30,),
+
+            Text(
+              _batteryStatus,
+              style: const TextStyle(fontSize: 30),
+            ),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(

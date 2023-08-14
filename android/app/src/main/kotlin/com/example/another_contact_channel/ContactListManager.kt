@@ -14,7 +14,7 @@ import androidx.core.content.ContextCompat
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
-class ContactManager(private val context: Context) {
+class ContactListManager(private val context: Context) {
     companion object {
         const val READ_CONTACTS_PERMISSION_CODE = 123
     }

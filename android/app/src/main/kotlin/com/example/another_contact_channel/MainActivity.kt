@@ -4,11 +4,9 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.os.BatteryManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.ContactsContract
@@ -28,18 +26,20 @@ class MainActivity : FlutterActivity() {
     private val CONTACT_PICKER_REQUEST = 123
     private var result: MethodChannel.Result? = null
 
-    private lateinit var contactManager: ContactManager
+    private lateinit var contactManager: ContactListManager
+    private lateinit var batteryStatus: BatteryStatusManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         checkAndRequestConnectionPermissions()
 
-        ContactManager(this).also { this.contactManager = it }
+        ContactListManager(this).also { this.contactManager = it }
         // Verificar y solicitar permisos en tiempo de ejecución
         if (!contactManager.hasReadContactsPermission()) {
             contactManager.requestReadContactsPermission(this, READ_CONTACTS_PERMISSION_CODE)
         }
 
+        BatteryStatusManager(this).also { this.batteryStatus = it }
 
     }
 
@@ -73,7 +73,7 @@ class MainActivity : FlutterActivity() {
             BATTERY_CHANNEL
         ).setMethodCallHandler { call, result ->
             if (call.method == "getBatteryStatus") {
-                val batteryStatus = getBatteryStatus()
+                val batteryStatus: String = batteryStatus.getBatteryStatus()
                 result.success(batteryStatus)
             } else {
                 result.notImplemented()
@@ -116,7 +116,6 @@ class MainActivity : FlutterActivity() {
     }
 
 
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
@@ -128,15 +127,7 @@ class MainActivity : FlutterActivity() {
 
 
 
-    private fun getBatteryStatus(): String {
-        val batteryIntent =
-            applicationContext.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-        val level = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
-        val scale = batteryIntent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
-        val batteryPercentage = (level?.toFloat() ?: 0f) / (scale?.toFloat() ?: 1f) * 100
 
-        return "Battery Level: $batteryPercentage%"
-    }
 
     private fun isMobileDataEnabled(context: Context): Boolean {
         val connectivityManager =
