@@ -3,7 +3,6 @@ package com.example.another_contact_channel
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.provider.ContactsContract
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -14,12 +13,11 @@ class MainActivity : FlutterActivity() {
     private val CONTACT_PICKER_CHANNEL = "com.example.contact_picker"
     private val READ_CONTACTS_PERMISSION_CODE = 123
     private val CONNECTION_PERMISSIONS_REQUEST_CODE = 1
-    private val CONTACT_PICKER_REQUEST = 123
-    private var result: MethodChannel.Result? = null
 
     private lateinit var contactManager: ContactListManager
     private lateinit var batteryStatus: BatteryStatusManager
     private lateinit var connectionStatus: ConnectionStatusManager
+    private lateinit var contactPickerManager: ContactPickerManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +31,11 @@ class MainActivity : FlutterActivity() {
 
         ConnectionStatusManager().also { this.connectionStatus = it }
         connectionStatus.checkAndRequestConnectionPermissions(this, CONNECTION_PERMISSIONS_REQUEST_CODE)
+
+        contactPickerManager = ContactPickerManager(this)
+        if (!contactPickerManager.hasReadContactsPermission()) {
+            contactPickerManager.requestReadContactsPermission()
+        }
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -101,9 +104,8 @@ class MainActivity : FlutterActivity() {
         ).setMethodCallHandler { call, result ->
             when (call.method) {
                 "openContactPicker" -> {
-                    openContactPicker(result)
+                    contactPickerManager.openContactPicker(result)
                 }
-
                 else -> result.notImplemented()
             }
         }
@@ -119,33 +121,9 @@ class MainActivity : FlutterActivity() {
         contactManager.onRequestPermissionsResult(requestCode, grantResults, flutterEngine!!)
     }
 
-
-    private fun openContactPicker(result: MethodChannel.Result) {
-        val intent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
-        startActivityForResult(intent, CONTACT_PICKER_REQUEST)
-        this.result = result
-    }
-
     @SuppressLint("Range")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == CONTACT_PICKER_REQUEST && resultCode == RESULT_OK) {
-            val contactsList = mutableListOf<String>()
-            val contactsData = data?.data
-            val contactsCursor =
-                contactsData?.let { contentResolver.query(it, null, null, null, null) }
-
-            if (contactsCursor?.moveToFirst() == true) {
-                val displayName =
-                    contactsCursor.getString(contactsCursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME))
-                contactsList.add(displayName)
-            }
-
-            contactsCursor?.close()
-            result?.success(contactsList)
-        } else {
-            result?.success(null)
-        }
+        contactPickerManager.handleActivityResult(requestCode, resultCode, data)
     }
 }
