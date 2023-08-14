@@ -1,22 +1,13 @@
 package com.example.another_contact_channel
 
-import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
-import android.os.Build
 import android.os.Bundle
 import android.provider.ContactsContract
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
-@Suppress("DEPRECATION")
 class MainActivity : FlutterActivity() {
     private val CONTACT_CHANNEL = "com.example.contacts"
     private val BATTERY_CHANNEL = "com.example.battery"
@@ -28,11 +19,10 @@ class MainActivity : FlutterActivity() {
 
     private lateinit var contactManager: ContactListManager
     private lateinit var batteryStatus: BatteryStatusManager
+    private lateinit var connectionStatus: ConnectionStatusManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        checkAndRequestConnectionPermissions()
-
         ContactListManager(this).also { this.contactManager = it }
         // Verificar y solicitar permisos en tiempo de ejecución
         if (!contactManager.hasReadContactsPermission()) {
@@ -41,6 +31,8 @@ class MainActivity : FlutterActivity() {
 
         BatteryStatusManager(this).also { this.batteryStatus = it }
 
+        ConnectionStatusManager().also { this.connectionStatus = it }
+        connectionStatus.checkAndRequestConnectionPermissions(this, CONNECTION_PERMISSIONS_REQUEST_CODE)
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -87,16 +79,18 @@ class MainActivity : FlutterActivity() {
         ).setMethodCallHandler { call, result ->
             when (call.method) {
                 "isMobileDataEnabled" -> {
-                    val isMobileDataEnabled = isMobileDataEnabled(this)
+                    val isMobileDataEnabled = connectionStatus.isMobileDataEnabled(this)
                     result.success(isMobileDataEnabled)
                 }
 
                 "isWifiEnabled" -> {
-                    val isWifiEnabled = isWifiEnabled(this)
+                    val isWifiEnabled = connectionStatus.isWifiEnabled(this)
                     result.success(isWifiEnabled)
                 }
 
-                else -> result.notImplemented()
+                else -> {
+                    result.notImplemented()
+                }
             }
         }
 
@@ -125,57 +119,6 @@ class MainActivity : FlutterActivity() {
         contactManager.onRequestPermissionsResult(requestCode, grantResults, flutterEngine!!)
     }
 
-
-
-
-
-    private fun isMobileDataEnabled(context: Context): Boolean {
-        val connectivityManager =
-            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            val networkCapabilities =
-                connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-            return networkCapabilities?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true
-        } else {
-            val networkInfo = connectivityManager.activeNetworkInfo
-            return networkInfo?.type == ConnectivityManager.TYPE_MOBILE
-        }
-    }
-
-    private fun isWifiEnabled(context: Context): Boolean {
-        val connectivityManager =
-            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI)
-        return networkInfo?.isConnected ?: false
-    }
-
-    private fun checkAndRequestConnectionPermissions() {
-        val permissionsToRequest = mutableListOf<String>()
-
-        // Verificar el permiso ACCESS_NETWORK_STATE
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            permissionsToRequest.add(Manifest.permission.ACCESS_NETWORK_STATE)
-        }
-
-        // Verificar el permiso ACCESS_WIFI_STATE
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_WIFI_STATE)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            permissionsToRequest.add(Manifest.permission.ACCESS_WIFI_STATE)
-        }
-
-        // Solicitar permisos si hay permisos pendientes
-        if (permissionsToRequest.isNotEmpty()) {
-            ActivityCompat.requestPermissions(
-                this,
-                permissionsToRequest.toTypedArray(),
-                CONNECTION_PERMISSIONS_REQUEST_CODE
-            )
-        }
-    }
 
     private fun openContactPicker(result: MethodChannel.Result) {
         val intent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
