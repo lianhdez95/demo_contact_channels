@@ -4,11 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class GetContactsChannelPage extends StatefulWidget {
-  const GetContactsChannelPage({Key? key}) : super(key: key);
+  const GetContactsChannelPage({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
-  _GetContactChannelPageState createState() => _GetContactChannelPageState();
+  State<GetContactsChannelPage> createState() => _GetContactChannelPageState();
 }
 
 class _GetContactChannelPageState extends State<GetContactsChannelPage> {
@@ -17,34 +16,31 @@ class _GetContactChannelPageState extends State<GetContactsChannelPage> {
   List<String> _contactPhones = [];
 
   Future<void> _getContacts() async {
-  List<dynamic>? contacts;
-  try {
-    final dynamic result = await platform.invokeMethod<List<dynamic>>('getContacts');
-    contacts = result;
-  } on PlatformException catch (e) {
-    print("Failed to get contacts: '${e.message}'.");
-    return;
-  }
+    List<String> contacts;
+    try {
+      final dynamic result = await platform.invokeMethod('getContacts');
+      contacts = result.cast<String>();
+    } on PlatformException catch (e) {
+      print("Failed to get contacts: '${e.message}'.");
+      return;
+    }
 
-  final Set<String> uniqueNames = {};
-  final Set<String> uniquePhones = {};
+    final Set<String> uniqueNames = {};
+    final Set<String> uniquePhones = {};
 
-  for (dynamic contact in contacts!) {
-    if (contact is Map<dynamic, dynamic>) {
-      final String? name = contact['name'];
-      final String? phone = contact['phone'];
-      if (name != null && phone != null) {
-        uniqueNames.add(name);
-        uniquePhones.add(phone);
+    for (String contact in contacts) {
+      final parts = contact.split(' - ');
+      if (parts.length >= 2) {
+        uniqueNames.add(parts[0]);
+        uniquePhones.add(parts[1]);
       }
     }
-  }
 
-  setState(() {
-    _contactNames = uniqueNames.toList();
-    _contactPhones = uniquePhones.toList();
-  });
-}
+    setState(() {
+      _contactNames = uniqueNames.toList();
+      _contactPhones = uniquePhones.toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,35 +51,38 @@ class _GetContactChannelPageState extends State<GetContactsChannelPage> {
       body: _contactNames.isEmpty
           ? const Center(child: Text('No contacts found'))
           : ListView.separated(
-              itemCount: _contactNames.length,
-              separatorBuilder: (BuildContext context, int index) =>
-                  const Divider(),
-              itemBuilder: (BuildContext context, int index) {
-                final name = _contactNames[index];
-                final phone = _contactPhones[index];
+        itemCount: _contactNames.length,
+        separatorBuilder: (BuildContext context, int index) =>
+        const Divider(),
+        itemBuilder: (BuildContext context, int index) {
+          final name = _contactNames[index];
+          final phone = _contactPhones[index];
 
-                if (name.isEmpty) {
-                  return Container(); // No muestra los contactos sin nombre
-                }
+          if (name.isEmpty) {
+            return Container(); // No muestra los contactos sin nombre
+          }
 
-                return ListTile(
-                  leading: const CircleAvatar(
-                    backgroundColor: Colors.transparent,
-                    child: Icon(
-                      Icons.account_circle,
-                      color: Colors.blue,
-                      size: 40,
-                    ),
-                  ),
-                  title: Text(name),
-                  subtitle: Text(phone),
-                  trailing: const Icon(Icons.arrow_forward_ios),
-                  onTap: () {
-                    // Implementación del onTap
-                  },
-                );
-              },
+          return ListTile(
+            leading: const CircleAvatar(
+              backgroundColor: Colors.transparent,
+              child: Icon(
+
+                Icons.account_circle,
+                color: Colors.blue,
+                size: 40,
+              ),
             ),
+            title: Text(name),
+            subtitle: Text(phone),
+            trailing: const Icon(
+                Icons.arrow_forward_ios
+            ),
+            onTap: (){
+              //implementación del OnTap
+            },
+          );
+        },
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _getContacts,
         tooltip: 'Get Contacts',

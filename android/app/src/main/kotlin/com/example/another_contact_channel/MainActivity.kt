@@ -2,7 +2,6 @@ package com.example.another_contact_channel
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -13,13 +12,11 @@ import android.os.BatteryManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.ContactsContract
-import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugins.GeneratedPluginRegistrant
 
 @Suppress("DEPRECATION")
 class MainActivity : FlutterActivity() {
@@ -31,12 +28,16 @@ class MainActivity : FlutterActivity() {
     private val CONTACT_PICKER_REQUEST = 123
     private var result: MethodChannel.Result? = null
 
+    private lateinit var contactManager: ContactManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         checkAndRequestConnectionPermissions()
+
+        ContactManager(this).also { this.contactManager = it }
         // Verificar y solicitar permisos en tiempo de ejecución
-        if (!hasReadContactsPermission()) {
-            requestReadContactsPermission()
+        if (!contactManager.hasReadContactsPermission()) {
+            contactManager.requestReadContactsPermission(this, READ_CONTACTS_PERMISSION_CODE)
         }
 
 
@@ -45,14 +46,14 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
+        //Method Channel para la obtención de los contactos para mostrarlos en el ListView
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             CONTACT_CHANNEL
-        ).setMethodCallHandler { call,
-                                 result ->
+        ).setMethodCallHandler { call, result ->
             if (call.method == "getContacts") {
-                if (hasReadContactsPermission()) {
-                    val contacts = getContacts()
+                if (contactManager.hasReadContactsPermission()) {
+                    val contacts = contactManager.getContacts()
                     result.success(contacts)
                 } else {
                     result.error(
@@ -66,7 +67,7 @@ class MainActivity : FlutterActivity() {
             }
         }
 
-
+        //Method Channel para conocer el nivel de la batería
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             BATTERY_CHANNEL
@@ -79,6 +80,7 @@ class MainActivity : FlutterActivity() {
             }
         }
 
+        //Method Channel para conocer el estado de conectividad del dispositivo
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             "com.example.network"
@@ -97,6 +99,8 @@ class MainActivity : FlutterActivity() {
                 else -> result.notImplemented()
             }
         }
+
+        //Method Channel para seleccionar y mostrar un contacto a partir de la aplicación de contactos del dispositivo
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             CONTACT_PICKER_CHANNEL
@@ -111,18 +115,7 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    private fun hasReadContactsPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) ==
-                PackageManager.PERMISSION_GRANTED
-    }
 
-    private fun requestReadContactsPermission() {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.READ_CONTACTS),
-            READ_CONTACTS_PERMISSION_CODE
-        )
-    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -130,64 +123,10 @@ class MainActivity : FlutterActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == READ_CONTACTS_PERMISSION_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permiso concedido, puedes acceder a los contactos
-                // Vuelve a llamar al método para obtener los contactos
-                val contacts = getContacts()
-                val channel = MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, CONTACT_CHANNEL)
-                channel.invokeMethod("getContacts", contacts)
-            } else {
-                Toast.makeText(this, "Permiso no concedido", Toast.LENGTH_SHORT).show()
-            }
-        }
-        if (requestCode == CONNECTION_PERMISSIONS_REQUEST_CODE) {
-            // Verificar si se concedieron todos los permisos solicitados
-            if (grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
-                // Se concedieron los permisos, realizar las acciones necesarias
-            } else {
-                Toast.makeText(this, "Permiso no concedido", Toast.LENGTH_SHORT).show()
-            }
-        }
+        contactManager.onRequestPermissionsResult(requestCode, grantResults, flutterEngine!!)
     }
 
-    @SuppressLint("Range")
-    private fun getContacts(): List<String> {
-        val contacts = mutableListOf<String>()
-        val contentResolver: ContentResolver = applicationContext.contentResolver
-        val cursor =
-            contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null)
-        cursor?.use {
-            while (it.moveToNext()) {
-                val displayName =
-                    it.getString(it.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME))
 
-                val contactId = it.getString(it.getColumnIndex(ContactsContract.Contacts._ID))
-
-                val phoneCursor =
-                    contentResolver.query(
-                        ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                        null,
-                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
-                        arrayOf(contactId),
-                        null
-                    )
-
-                phoneCursor?.use { phone ->
-                    while (phone.moveToNext()) {
-                        val phoneNumber =
-                            phone.getString(
-                                phone.getColumnIndex(
-                                    ContactsContract.CommonDataKinds.Phone.NUMBER
-                                )
-                            )
-                        contacts.add("$displayName - $phoneNumber")
-                    }
-                }
-            }
-        }
-        return contacts
-    }
 
     private fun getBatteryStatus(): String {
         val batteryIntent =
