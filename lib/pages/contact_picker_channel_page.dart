@@ -14,7 +14,8 @@ class ContactPickerChannelPage extends StatefulWidget {
 class _ContactPickerChannelPageState extends State<ContactPickerChannelPage> {
   static const MethodChannel _channel = MethodChannel('com.example.contact_picker');
 
-  List<String> selectedContacts = [];
+  String selectedContact = '';
+  String selectedPhoneNumber = '';
 
   @override
   Widget build(BuildContext context) {
@@ -23,26 +24,32 @@ class _ContactPickerChannelPageState extends State<ContactPickerChannelPage> {
         title: const Text('Contact Picker'),
       ),
       body: Center(
+        
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            customLabel(selectedContact, const Icon(Icons.account_circle_outlined, color: Colors.blue, size: 30,)),
+            
+            const SizedBox(height: 10),
+            
+            //en este customLabel quiero mostrar el número de teléfono de ese contacto
+            customLabel(selectedPhoneNumber, const Icon(Icons.phone_rounded, color: Colors.blue, size: 30,)),
+            
+            const SizedBox(height: 20),
             ElevatedButton(
-              child: const Text('Open Contact Picker'),
+              
+              style: ButtonStyle(
+                fixedSize: MaterialStateProperty.all<Size>(const Size(180, 50)),
+                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                  RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
+              ),
+              child: const Text('Choose contact', style: TextStyle(fontSize: 20), textAlign: TextAlign.center),
               onPressed: () {
                 openContactPicker();
               },
-            ),
-            const SizedBox(height: 16),
-            const Text('Selected Contacts:'),
-            Expanded(
-              child: ListView.builder(
-                itemCount: selectedContacts.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(selectedContacts[index]),
-                  );
-                },
-              ),
             ),
           ],
         ),
@@ -50,19 +57,36 @@ class _ContactPickerChannelPageState extends State<ContactPickerChannelPage> {
     );
   }
 
-  Future<void> openContactPicker() async {
-    try {
-      List<dynamic> result = await _channel.invokeMethod('openContactPicker');
-      // ignore: unnecessary_null_comparison
-      if (result != null) {
-        setState(() {
-          selectedContacts = List<String>.from(result);
-        });
-      }
-    } catch (e) {
-      print('Error opening contact picker: $e');
-    }
+  Widget customLabel(String text, Icon icon){
+    return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                icon,
+                Card(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), side: const BorderSide(color: Colors.blue)),
+                  child: Container(
+                    width: 200,
+                    padding: const EdgeInsets.all(10.0),
+                    child: Text(text, style: const TextStyle(fontSize: 20)),
+                  ),
+                ),
+              ],
+            );
   }
+
+  Future<void> openContactPicker() async {
+  try {
+    List<dynamic>? result = await _channel.invokeMethod('openContactPicker');
+    if (result != null) {
+      setState(() {
+        selectedContact = result[0];
+        selectedPhoneNumber = result[1];
+      });
+    }
+  } catch (e) {
+    print('Error opening contact picker: $e');
+  }
+}
 
   Future<bool> requestContactPermission() async {
     try {

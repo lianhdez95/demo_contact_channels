@@ -14,7 +14,7 @@ class HomePage extends StatelessWidget {
             children: [
               appButton('Contact Channel', '/contact_channel', context, const Icon(Icons.account_box)),
               const SizedBox(height: 20),
-              appButton('Contact App Channel', '/contact_picker_channel', context, const Icon(Icons.account_box)),
+              appButton('Contact Pick Channel', '/contact_picker_channel', context, const Icon(Icons.account_box)),
               const SizedBox(height: 20),
               appButton('Battery Level Channel', '/battery_channel', context, const Icon(Icons.battery_alert_sharp)),
               const SizedBox(height: 20),

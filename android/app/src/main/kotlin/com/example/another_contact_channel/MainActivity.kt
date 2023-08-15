@@ -14,6 +14,8 @@ class MainActivity : FlutterActivity() {
     private val READ_CONTACTS_PERMISSION_CODE = 123
     private val CONNECTION_PERMISSIONS_REQUEST_CODE = 1
 
+    private val contactListManager = ContactListManager(this)
+
     private lateinit var contactManager: ContactListManager
     private lateinit var batteryStatus: BatteryStatusManager
     private lateinit var connectionStatus: ConnectionStatusManager
@@ -42,6 +44,8 @@ class MainActivity : FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
 
         //Method Channel para la obtención de los contactos para mostrarlos en el ListView
+        super.configureFlutterEngine(flutterEngine)
+
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             CONTACT_CHANNEL
@@ -92,7 +96,7 @@ class MainActivity : FlutterActivity() {
                 }
 
                 "isBluetoothEnabled" -> {
-                    val isBluetoothEnabled: Boolean = connectionStatus.isBluetoothEnabled(this)
+                    val isBluetoothEnabled: Boolean = connectionStatus.isBluetoothEnabled()
                     result.success(isBluetoothEnabled)
                 }
 

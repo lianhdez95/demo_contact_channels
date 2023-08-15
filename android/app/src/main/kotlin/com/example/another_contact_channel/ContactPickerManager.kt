@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.database.Cursor
+import android.net.Uri
 import android.provider.ContactsContract
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -23,17 +25,62 @@ class ContactPickerManager(private val activity: Activity) {
     fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == CONTACT_PICKER_REQUEST && resultCode == Activity.RESULT_OK) {
             val contactsList = mutableListOf<String>()
-            val contactsData = data?.data
-            val contactsCursor =
-                contactsData?.let { activity.contentResolver.query(it, null, null, null, null) }
+            val contactData = data?.data
 
-            if (contactsCursor?.moveToFirst() == true) {
-                val displayName =
-                    contactsCursor.getString(contactsCursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME))
-                contactsList.add(displayName)
+            contactData?.let { contactUri ->
+                val projection = arrayOf(
+                    ContactsContract.Contacts.DISPLAY_NAME,
+                    ContactsContract.Contacts._ID
+                )
+                val cursor: Cursor? = activity.contentResolver.query(
+                    contactUri,
+                    projection,
+                    null,
+                    null,
+                    null
+                )
+                cursor?.let {
+                    if (it.moveToFirst()) {
+                        val displayNameIndex: Int =
+                            it.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
+                        if (displayNameIndex != -1) {
+                            val displayName: String? = it.getString(displayNameIndex)
+                            displayName?.let {
+                                contactsList.add(displayName)
+                            }
+                        }
+
+                        val contactIdIndex = it.getColumnIndex(ContactsContract.Contacts._ID)
+                        val contactId = it.getString(contactIdIndex)
+
+                        val phoneProjection = arrayOf(
+                            ContactsContract.CommonDataKinds.Phone.NUMBER
+                        )
+                        val phoneCursor = activity.contentResolver.query(
+                            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                            phoneProjection,
+                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                            arrayOf(contactId),
+                            null
+                        )
+                        phoneCursor?.let { phone ->
+                            if (phone.moveToFirst()) {
+                                val phoneNumberIndex: Int =
+                                    phone.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                                if (phoneNumberIndex != -1) {
+                                    val phoneNumber: String? = phone.getString(phoneNumberIndex)
+                                    phoneNumber?.let {
+                                        contactsList.add(phoneNumber)
+                                    }
+                                }
+                            }
+                            phone.close()
+                        }
+                    }
+                    it.close()
+                }
             }
 
-            contactsCursor?.close()
             result?.success(contactsList)
         } else {
             result?.success(null)

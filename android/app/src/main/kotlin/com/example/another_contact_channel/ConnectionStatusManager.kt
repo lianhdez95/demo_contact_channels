@@ -36,7 +36,7 @@ class ConnectionStatusManager()
         return networkInfo?.isConnected ?: false
     }
 
-    fun isBluetoothEnabled(context: Context): Boolean {
+    fun isBluetoothEnabled(): Boolean {
         val bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         return bluetoothAdapter.isEnabled
     }
