@@ -12,19 +12,19 @@ class HomePage extends StatelessWidget {
           padding: const EdgeInsets.all(50),
           child: Column(
             children: [
-              _app_button('Contact Channel', '/contact_channel', context),
+              appButton('Contact Channel', '/contact_channel', context, const Icon(Icons.account_box)),
               const SizedBox(height: 20),
-              _app_button('Contact App Channel', '/contact_picker_channel', context),
+              appButton('Contact App Channel', '/contact_picker_channel', context, const Icon(Icons.account_box)),
               const SizedBox(height: 20),
-              _app_button('Battery Level Channel', '/battery_channel', context),
+              appButton('Battery Level Channel', '/battery_channel', context, const Icon(Icons.battery_alert_sharp)),
               const SizedBox(height: 20),
-              _app_button('Connection Type Channel', '/connection_channel', context),
+              appButton('Connection Type Channel', '/connection_channel', context, const Icon(Icons.network_check)),
               const SizedBox(height: 20),
-              _app_button('Gallery Channel', '', context),
+              appButton('Gallery Channel', '', context, const Icon(Icons.image)),
               const SizedBox(height: 20),
-              _app_button('Camera Channel', '', context),
+              appButton('Camera Channel', '', context, const Icon(Icons.camera_alt)),
               const SizedBox(height: 20),
-              _app_button('Device Info Channel', '', context)
+              appButton('Device Info Channel', '', context, const Icon(Icons.info))
             ],
           ),
         ),
@@ -32,7 +32,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _app_button(String text, String route, BuildContext context){
+  Widget appButton(String text, String route, BuildContext context, Icon icon) {
     return ElevatedButton(
       onPressed: () {
         // Agrega el código para navegar a la ruta correspondiente
@@ -42,19 +42,23 @@ class HomePage extends StatelessWidget {
                 duration: Duration(seconds: 2),
               ))
             : Navigator.pushNamed(context, route);
-
       },
       style: ButtonStyle(
+          alignment: Alignment.centerLeft,
           shape: MaterialStateProperty.all<RoundedRectangleBorder>(
               RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18.0))),
-          minimumSize:
-          MaterialStateProperty.all<Size>(const Size(300, 50))),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 20),
+          minimumSize: MaterialStateProperty.all<Size>(const Size(300, 50))),
+      child: Row(
+        children: [
+          icon,
+          const SizedBox(width: 10,),
+          Text(
+            text,
+            style: const TextStyle(fontSize: 20),
+          ),
+        ],
       ),
     );
   }
 }
-

@@ -82,13 +82,18 @@ class MainActivity : FlutterActivity() {
         ).setMethodCallHandler { call, result ->
             when (call.method) {
                 "isMobileDataEnabled" -> {
-                    val isMobileDataEnabled = connectionStatus.isMobileDataEnabled(this)
+                    val isMobileDataEnabled: Boolean = connectionStatus.isMobileDataEnabled(this)
                     result.success(isMobileDataEnabled)
                 }
 
                 "isWifiEnabled" -> {
-                    val isWifiEnabled = connectionStatus.isWifiEnabled(this)
+                    val isWifiEnabled: Boolean = connectionStatus.isWifiEnabled(this)
                     result.success(isWifiEnabled)
+                }
+
+                "isBluetoothEnabled" -> {
+                    val isBluetoothEnabled: Boolean = connectionStatus.isBluetoothEnabled(this)
+                    result.success(isBluetoothEnabled)
                 }
 
                 else -> {

@@ -2,6 +2,7 @@ package com.example.another_contact_channel
 
 import android.Manifest
 import android.app.Activity
+import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
@@ -35,8 +36,13 @@ class ConnectionStatusManager()
         return networkInfo?.isConnected ?: false
     }
 
+    fun isBluetoothEnabled(context: Context): Boolean {
+        val bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+        return bluetoothAdapter.isEnabled
+    }
+
     fun checkAndRequestConnectionPermissions(activity: Activity, requestCode: Int) {
-        val permissionsToRequest = mutableListOf<String>()
+        val permissionsToRequest: MutableList<String> = mutableListOf()
 
         // Verificar el permiso ACCESS_NETWORK_STATE
         if (ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_NETWORK_STATE)
@@ -50,6 +56,16 @@ class ConnectionStatusManager()
             != PackageManager.PERMISSION_GRANTED
         ) {
             permissionsToRequest.add(Manifest.permission.ACCESS_WIFI_STATE)
+        }
+
+        // Verificar el permiso BLUETOOTH_ADMIN
+        if (ContextCompat.checkSelfPermission(
+                activity,
+                Manifest.permission.BLUETOOTH_ADMIN
+            )
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            permissionsToRequest.add(Manifest.permission.BLUETOOTH_ADMIN)
         }
 
         // Solicitar permisos si hay permisos pendientes
