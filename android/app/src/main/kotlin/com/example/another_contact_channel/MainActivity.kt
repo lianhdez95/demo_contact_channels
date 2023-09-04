@@ -2,125 +2,56 @@ package com.example.another_contact_channel
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import androidx.annotation.RequiresApi
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
-import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
-    private val CONTACT_CHANNEL = "com.example.contacts"
-    private val BATTERY_CHANNEL = "com.example.battery"
-    private val CONTACT_PICKER_CHANNEL = "com.example.contact_picker"
     private val READ_CONTACTS_PERMISSION_CODE = 123
     private val CONNECTION_PERMISSIONS_REQUEST_CODE = 1
-
-    private val contactListManager = ContactListManager(this)
+    private val READ_PHONE_REQUEST_PERMISSION_CODE = 1
 
     private lateinit var contactManager: ContactListManager
     private lateinit var batteryStatus: BatteryStatusManager
     private lateinit var connectionStatus: ConnectionStatusManager
     private lateinit var contactPickerManager: ContactPickerManager
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ContactListManager(this).also { this.contactManager = it }
+        ContactListManager(flutterEngine!!.dartExecutor.binaryMessenger, this).also { this.contactManager = it }
         // Verificar y solicitar permisos en tiempo de ejecución
         if (!contactManager.hasReadContactsPermission()) {
             contactManager.requestReadContactsPermission(this, READ_CONTACTS_PERMISSION_CODE)
         }
 
-        BatteryStatusManager(this).also { this.batteryStatus = it }
+        BatteryStatusManager(flutterEngine!!.dartExecutor.binaryMessenger, this).also { this.batteryStatus = it }
 
-        ConnectionStatusManager().also { this.connectionStatus = it }
+        ConnectionStatusManager(flutterEngine!!.dartExecutor.binaryMessenger, this).also { this.connectionStatus = it }
         connectionStatus.checkAndRequestConnectionPermissions(this, CONNECTION_PERMISSIONS_REQUEST_CODE)
 
-        contactPickerManager = ContactPickerManager(this)
+        contactPickerManager = ContactPickerManager(flutterEngine!!.dartExecutor.binaryMessenger, this)
         if (!contactPickerManager.hasReadContactsPermission()) {
             contactPickerManager.requestReadContactsPermission()
         }
     }
 
-    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
-        super.configureFlutterEngine(flutterEngine)
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         //Method Channel para la obtención de los contactos para mostrarlos en el ListView
         super.configureFlutterEngine(flutterEngine)
 
-        MethodChannel(
-            flutterEngine.dartExecutor.binaryMessenger,
-            CONTACT_CHANNEL
-        ).setMethodCallHandler { call, result ->
-            if (call.method == "getContacts") {
-                if (contactManager.hasReadContactsPermission()) {
-                    val contacts = contactManager.getContacts()
-                    result.success(contacts)
-                } else {
-                    result.error(
-                        "PERMISSION_DENIED",
-                        "Permission denied for reading contacts",
-                        null
-                    )
-                }
-            } else {
-                result.notImplemented()
-            }
-        }
-
-        //Method Channel para conocer el nivel de la batería
-        MethodChannel(
-            flutterEngine.dartExecutor.binaryMessenger,
-            BATTERY_CHANNEL
-        ).setMethodCallHandler { call, result ->
-            if (call.method == "getBatteryStatus") {
-                val batteryStatus: String = batteryStatus.getBatteryStatus()
-                result.success(batteryStatus)
-            } else {
-                result.notImplemented()
-            }
-        }
-
-        //Method Channel para conocer el estado de conectividad del dispositivo
-        MethodChannel(
-            flutterEngine.dartExecutor.binaryMessenger,
-            "com.example.network"
-        ).setMethodCallHandler { call, result ->
-            when (call.method) {
-                "isMobileDataEnabled" -> {
-                    val isMobileDataEnabled: Boolean = connectionStatus.isMobileDataEnabled(this)
-                    result.success(isMobileDataEnabled)
-                }
-
-                "isWifiEnabled" -> {
-                    val isWifiEnabled: Boolean = connectionStatus.isWifiEnabled(this)
-                    result.success(isWifiEnabled)
-                }
-
-                "isBluetoothEnabled" -> {
-                    val isBluetoothEnabled: Boolean = connectionStatus.isBluetoothEnabled()
-                    result.success(isBluetoothEnabled)
-                }
-
-                else -> {
-                    result.notImplemented()
-                }
-            }
-        }
-
-        //Method Channel para seleccionar y mostrar un contacto a partir de la aplicación de contactos del dispositivo
-        MethodChannel(
-            flutterEngine.dartExecutor.binaryMessenger,
-            CONTACT_PICKER_CHANNEL
-        ).setMethodCallHandler { call, result ->
-            when (call.method) {
-                "openContactPicker" -> {
-                    contactPickerManager.openContactPicker(result)
-                }
-                else -> result.notImplemented()
-            }
-        }
+        contactManager = ContactListManager(flutterEngine.dartExecutor.binaryMessenger, this)
+        batteryStatus = BatteryStatusManager(flutterEngine.dartExecutor.binaryMessenger, this)
+        connectionStatus = ConnectionStatusManager(flutterEngine.dartExecutor.binaryMessenger, this)
+        contactPickerManager = ContactPickerManager(flutterEngine.dartExecutor.binaryMessenger, this)
     }
 
-
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
@@ -128,6 +59,13 @@ class MainActivity : FlutterActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         contactManager.onRequestPermissionsResult(requestCode, grantResults, flutterEngine!!)
+
+        if (requestCode == READ_PHONE_REQUEST_PERMISSION_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permiso otorgado, configurar el FlutterEngine
+                configureFlutterEngine(flutterEngine!!)
+            } else return
+        }
     }
 
     @SuppressLint("Range")

@@ -12,11 +12,40 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.BinaryMessenger
+import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 
-class ContactListManager(private val context: Context) {
+class ContactListManager(
+    private val binaryMessenger: BinaryMessenger,
+    private val context: Context
+) : MethodCallHandler {
     companion object {
         const val READ_CONTACTS_PERMISSION_CODE = 123
+        private val CONTACT_CHANNEL = "com.example.contacts"
+    }
+
+    init {
+        MethodChannel(binaryMessenger, CONTACT_CHANNEL).setMethodCallHandler(this)
+    }
+
+
+    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+        when (call.method) {
+            "getContacts" -> {
+                if (this.hasReadContactsPermission()) {
+                    val contacts = this.getContacts()
+                    result.success(contacts)
+                } else {
+                    result.error(
+                        "PERMISSION_DENIED",
+                        "Permission denied for reading contacts",
+                        null
+                    )
+                }
+            }
+        }
     }
 
     fun hasReadContactsPermission(): Boolean {

@@ -9,11 +9,31 @@ import android.net.Uri
 import android.provider.ContactsContract
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import io.flutter.plugin.common.BinaryMessenger
+import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 
-class ContactPickerManager(private val activity: Activity) {
+class ContactPickerManager(private val binaryMessenger: BinaryMessenger, private val activity: Activity): MethodCallHandler {
+
+
     private val CONTACT_PICKER_REQUEST = 123
     private var result: MethodChannel.Result? = null
+    private val CONTACT_PICKER_CHANNEL = "com.example.contact_picker"
+    init {
+        MethodChannel(binaryMessenger, CONTACT_PICKER_CHANNEL).setMethodCallHandler(this)
+    }
+
+    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+
+        when (call.method) {
+            "openContactPicker" -> {
+                openContactPicker(result)
+            }
+
+            else -> result.notImplemented()
+        }
+    }
 
     fun openContactPicker(result: MethodChannel.Result) {
         val intent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
@@ -103,6 +123,9 @@ class ContactPickerManager(private val activity: Activity) {
     }
 
     companion object {
-        const val READ_CONTACTS_PERMISSION_CODE = 1234 // Reemplaza con tu código de permiso personalizado
+        const val READ_CONTACTS_PERMISSION_CODE =
+            1234 // Reemplaza con tu código de permiso personalizado
     }
 }
+
+

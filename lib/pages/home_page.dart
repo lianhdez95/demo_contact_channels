@@ -23,8 +23,6 @@ class HomePage extends StatelessWidget {
               appButton('Gallery Channel', '', context, const Icon(Icons.image)),
               const SizedBox(height: 20),
               appButton('Camera Channel', '', context, const Icon(Icons.camera_alt)),
-              const SizedBox(height: 20),
-              appButton('Device Info Channel', '', context, const Icon(Icons.info))
             ],
           ),
         ),

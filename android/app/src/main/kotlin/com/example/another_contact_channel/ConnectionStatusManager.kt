@@ -10,10 +10,47 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import io.flutter.plugin.common.BinaryMessenger
+import io.flutter.plugin.common.MethodCall
+import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 
 @Suppress("DEPRECATION")
-class ConnectionStatusManager()
-{
+class ConnectionStatusManager(
+    private val binaryMessenger: BinaryMessenger,
+    private val context: Context
+) : MethodCallHandler {
+
+    private val CONNECTION_STATUS_CHANNEL = "com.example.network"
+
+    init {
+        MethodChannel(binaryMessenger, CONNECTION_STATUS_CHANNEL).setMethodCallHandler(this)
+    }
+
+    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+        when (call.method) {
+
+            "isMobileDataEnabled" -> {
+                val isMobileDataEnabled: Boolean = isMobileDataEnabled(context)
+                result.success(isMobileDataEnabled)
+            }
+
+            "isWifiEnabled" -> {
+                val isWifiEnabled: Boolean = isWifiEnabled(context)
+                result.success(isWifiEnabled)
+            }
+
+            "isBluetoothEnabled" -> {
+                val isBluetoothEnabled: Boolean = isBluetoothEnabled()
+                result.success(isBluetoothEnabled)
+            }
+
+            else -> {
+                result.notImplemented()
+            }
+        }
+
+    }
 
     fun isMobileDataEnabled(context: Context): Boolean {
         val connectivityManager =
