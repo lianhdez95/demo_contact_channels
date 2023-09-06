@@ -17,9 +17,11 @@ class MainActivity : FlutterActivity() {
     private lateinit var contactManager: ContactListManager
     private lateinit var batteryStatus: BatteryStatusManager
     private lateinit var connectionStatus: ConnectionStatusManager
-    private lateinit var contactPickerManager: ContactPickerManager
-    private lateinit var cameraOpenManager: CameraManager
+    private lateinit var contactPicker: ContactPickerManager
+    private lateinit var cameraOpen: CameraManager
     private lateinit var galleryChannel: GalleryChannel
+    private lateinit var deviceInfo: DeviceInfoManager
+    private lateinit var locationManager: LocationManager
 
 //    override fun onCreate(savedInstanceState: Bundle?) {
 //        super.onCreate(savedInstanceState)
@@ -49,17 +51,19 @@ class MainActivity : FlutterActivity() {
         contactManager = ContactListManager(flutterEngine.dartExecutor.binaryMessenger, this)
         batteryStatus = BatteryStatusManager(flutterEngine.dartExecutor.binaryMessenger, this)
         connectionStatus = ConnectionStatusManager(flutterEngine.dartExecutor.binaryMessenger, this)
-        contactPickerManager = ContactPickerManager(flutterEngine.dartExecutor.binaryMessenger, this)
-        cameraOpenManager = CameraManager(flutterEngine.dartExecutor.binaryMessenger, this)
+        contactPicker = ContactPickerManager(flutterEngine.dartExecutor.binaryMessenger, this)
+        cameraOpen = CameraManager(flutterEngine.dartExecutor.binaryMessenger, this)
         galleryChannel = GalleryChannel(flutterEngine.dartExecutor.binaryMessenger, this)
+        deviceInfo = DeviceInfoManager(flutterEngine.dartExecutor.binaryMessenger, this)
+        locationManager = LocationManager(flutterEngine.dartExecutor.binaryMessenger, this)
     }
 
 
     @SuppressLint("Range")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        contactPickerManager.onActivityResult(requestCode, resultCode, data)
-        cameraOpenManager.onActivityResult(requestCode, resultCode, data)
+        contactPicker.onActivityResult(requestCode, resultCode, data)
+        cameraOpen.onActivityResult(requestCode, resultCode, data)
         galleryChannel.onActivityResult(requestCode, resultCode, data)
     }
 }
