@@ -19,7 +19,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 
 class ContactListManager(
     private val binaryMessenger: BinaryMessenger,
-    private val context: Context
+    private val activity: Activity
 ) : MethodCallHandler {
     companion object {
         const val READ_CONTACTS_PERMISSION_CODE = 123
@@ -34,9 +34,13 @@ class ContactListManager(
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "getContacts" -> {
-                if (this.hasReadContactsPermission()) {
+                if (!this.hasReadContactsPermission()) {
+                    this.requestReadContactsPermission(activity, READ_CONTACTS_PERMISSION_CODE)
+
+                } else if (this.hasReadContactsPermission()) {
                     val contacts = this.getContacts()
                     result.success(contacts)
+
                 } else {
                     result.error(
                         "PERMISSION_DENIED",
@@ -49,8 +53,8 @@ class ContactListManager(
     }
 
     fun hasReadContactsPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            context,
+        return ActivityCompat.checkSelfPermission(
+            activity,
             Manifest.permission.READ_CONTACTS
         ) == PackageManager.PERMISSION_GRANTED
     }
@@ -78,8 +82,6 @@ class ContactListManager(
                     "com.example.contacts"
                 )
                 channel.invokeMethod("getContacts", contacts)
-            } else {
-                Toast.makeText(context, "Permiso no concedido", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -87,7 +89,7 @@ class ContactListManager(
     @SuppressLint("Range")
     fun getContacts(): List<String> {
         val contacts = mutableListOf<String>()
-        val contentResolver: ContentResolver = context.contentResolver
+        val contentResolver: ContentResolver = activity.contentResolver
         val cursor: Cursor? = contentResolver.query(
             ContactsContract.Contacts.CONTENT_URI,
             null,

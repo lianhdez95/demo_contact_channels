@@ -18,26 +18,27 @@ class MainActivity : FlutterActivity() {
     private lateinit var batteryStatus: BatteryStatusManager
     private lateinit var connectionStatus: ConnectionStatusManager
     private lateinit var contactPickerManager: ContactPickerManager
+    private lateinit var cameraOpenManager: CameraManager
+    private lateinit var galleryChannel: GalleryChannel
 
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        ContactListManager(flutterEngine!!.dartExecutor.binaryMessenger, this).also { this.contactManager = it }
-        // Verificar y solicitar permisos en tiempo de ejecución
-        if (!contactManager.hasReadContactsPermission()) {
-            contactManager.requestReadContactsPermission(this, READ_CONTACTS_PERMISSION_CODE)
-        }
-
-        BatteryStatusManager(flutterEngine!!.dartExecutor.binaryMessenger, this).also { this.batteryStatus = it }
-
-        ConnectionStatusManager(flutterEngine!!.dartExecutor.binaryMessenger, this).also { this.connectionStatus = it }
-        connectionStatus.checkAndRequestConnectionPermissions(this, CONNECTION_PERMISSIONS_REQUEST_CODE)
-
-        contactPickerManager = ContactPickerManager(flutterEngine!!.dartExecutor.binaryMessenger, this)
-        if (!contactPickerManager.hasReadContactsPermission()) {
-            contactPickerManager.requestReadContactsPermission()
-        }
-    }
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        ContactListManager(flutterEngine!!.dartExecutor.binaryMessenger, this).also { this.contactManager = it }
+//        // Verificar y solicitar permisos en tiempo de ejecución
+//        if (!contactManager.hasReadContactsPermission()) {
+//            contactManager.requestReadContactsPermission(this, READ_CONTACTS_PERMISSION_CODE)
+//        }
+//
+//        BatteryStatusManager(flutterEngine!!.dartExecutor.binaryMessenger, this).also { this.batteryStatus = it }
+//
+//        ConnectionStatusManager(flutterEngine!!.dartExecutor.binaryMessenger, this).also { this.connectionStatus = it }
+//        connectionStatus.checkAndRequestConnectionPermissions(this, CONNECTION_PERMISSIONS_REQUEST_CODE)
+//
+//        contactPickerManager = ContactPickerManager(flutterEngine!!.dartExecutor.binaryMessenger, this)
+//        if (!contactPickerManager.hasReadContactsPermission()) {
+//            contactPickerManager.requestReadContactsPermission()
+//        }
+//    }
 
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -49,28 +50,16 @@ class MainActivity : FlutterActivity() {
         batteryStatus = BatteryStatusManager(flutterEngine.dartExecutor.binaryMessenger, this)
         connectionStatus = ConnectionStatusManager(flutterEngine.dartExecutor.binaryMessenger, this)
         contactPickerManager = ContactPickerManager(flutterEngine.dartExecutor.binaryMessenger, this)
+        cameraOpenManager = CameraManager(flutterEngine.dartExecutor.binaryMessenger, this)
+        galleryChannel = GalleryChannel(flutterEngine.dartExecutor.binaryMessenger, this)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        contactManager.onRequestPermissionsResult(requestCode, grantResults, flutterEngine!!)
-
-        if (requestCode == READ_PHONE_REQUEST_PERMISSION_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permiso otorgado, configurar el FlutterEngine
-                configureFlutterEngine(flutterEngine!!)
-            } else return
-        }
-    }
 
     @SuppressLint("Range")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        contactPickerManager.handleActivityResult(requestCode, resultCode, data)
+        contactPickerManager.onActivityResult(requestCode, resultCode, data)
+        cameraOpenManager.onActivityResult(requestCode, resultCode, data)
+        galleryChannel.onActivityResult(requestCode, resultCode, data)
     }
 }

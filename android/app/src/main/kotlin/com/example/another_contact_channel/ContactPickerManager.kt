@@ -14,12 +14,16 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 
-class ContactPickerManager(private val binaryMessenger: BinaryMessenger, private val activity: Activity): MethodCallHandler {
+class ContactPickerManager(
+    private val binaryMessenger: BinaryMessenger,
+    private val activity: Activity
+) : MethodCallHandler {
 
 
     private val CONTACT_PICKER_REQUEST = 123
     private var result: MethodChannel.Result? = null
     private val CONTACT_PICKER_CHANNEL = "com.example.contact_picker"
+
     init {
         MethodChannel(binaryMessenger, CONTACT_PICKER_CHANNEL).setMethodCallHandler(this)
     }
@@ -42,7 +46,7 @@ class ContactPickerManager(private val binaryMessenger: BinaryMessenger, private
     }
 
     @SuppressLint("Range")
-    fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == CONTACT_PICKER_REQUEST && resultCode == Activity.RESULT_OK) {
             val contactsList = mutableListOf<String>()
             val contactData = data?.data
