@@ -1,17 +1,10 @@
 package com.example.another_contact_channel
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ContentResolver
-import android.content.Context
-import android.content.pm.PackageManager
 import android.database.Cursor
 import android.provider.ContactsContract
-import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -26,6 +19,7 @@ class ContactListManager(
         private val CONTACT_CHANNEL = "com.example.contacts"
     }
 
+    private val permissionHandler: PermissionHandlerManager = PermissionHandlerManager()
     init {
         MethodChannel(binaryMessenger, CONTACT_CHANNEL).setMethodCallHandler(this)
     }
@@ -34,10 +28,10 @@ class ContactListManager(
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "getContacts" -> {
-                if (!this.hasReadContactsPermission()) {
-                    this.requestReadContactsPermission(activity, READ_CONTACTS_PERMISSION_CODE)
+                if (!permissionHandler.hasReadContactsPermission(activity)) {
+                    permissionHandler.requestReadContactsPermission(activity, READ_CONTACTS_PERMISSION_CODE)
 
-                } else if (this.hasReadContactsPermission()) {
+                } else if (permissionHandler.hasReadContactsPermission(activity)) {
                     val contacts = this.getContacts()
                     result.success(contacts)
 
@@ -52,39 +46,39 @@ class ContactListManager(
         }
     }
 
-    fun hasReadContactsPermission(): Boolean {
-        return ActivityCompat.checkSelfPermission(
-            activity,
-            Manifest.permission.READ_CONTACTS
-        ) == PackageManager.PERMISSION_GRANTED
-    }
+//    fun hasReadContactsPermission(): Boolean {
+//        return ActivityCompat.checkSelfPermission(
+//            activity,
+//            Manifest.permission.READ_CONTACTS
+//        ) == PackageManager.PERMISSION_GRANTED
+//    }
+//
+//    fun requestReadContactsPermission(activity: Activity, requestCode: Int) {
+//        ActivityCompat.requestPermissions(
+//            activity,
+//            arrayOf(Manifest.permission.READ_CONTACTS),
+//            requestCode
+//        )
+//    }
 
-    fun requestReadContactsPermission(activity: Activity, requestCode: Int) {
-        ActivityCompat.requestPermissions(
-            activity,
-            arrayOf(Manifest.permission.READ_CONTACTS),
-            requestCode
-        )
-    }
-
-    fun onRequestPermissionsResult(
-        requestCode: Int,
-        grantResults: IntArray,
-        flutterEngine: FlutterEngine
-    ) {
-        if (requestCode == READ_CONTACTS_PERMISSION_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permiso concedido, puedes acceder a los contactos
-                // Vuelve a llamar al método para obtener los contactos
-                val contacts = getContacts()
-                val channel = MethodChannel(
-                    flutterEngine.dartExecutor.binaryMessenger,
-                    "com.example.contacts"
-                )
-                channel.invokeMethod("getContacts", contacts)
-            }
-        }
-    }
+//    fun onRequestPermissionsResult(
+//        requestCode: Int,
+//        grantResults: IntArray,
+//        flutterEngine: FlutterEngine
+//    ) {
+//        if (requestCode == READ_CONTACTS_PERMISSION_CODE) {
+//            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                // Permiso concedido, puedes acceder a los contactos
+//                // Vuelve a llamar al método para obtener los contactos
+//                val contacts = getContacts()
+//                val channel = MethodChannel(
+//                    flutterEngine.dartExecutor.binaryMessenger,
+//                    "com.example.contacts"
+//                )
+//                channel.invokeMethod("getContacts", contacts)
+//            }
+//        }
+//    }
 
     @SuppressLint("Range")
     fun getContacts(): List<String> {

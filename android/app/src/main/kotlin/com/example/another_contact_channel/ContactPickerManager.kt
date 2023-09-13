@@ -3,12 +3,8 @@ package com.example.another_contact_channel
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.database.Cursor
-import android.net.Uri
 import android.provider.ContactsContract
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -23,7 +19,7 @@ class ContactPickerManager(
     private val CONTACT_PICKER_REQUEST = 123
     private var result: MethodChannel.Result? = null
     private val CONTACT_PICKER_CHANNEL = "com.example.contact_picker"
-
+    private val permissionHandler: PermissionHandlerManager = PermissionHandlerManager()
     init {
         MethodChannel(binaryMessenger, CONTACT_PICKER_CHANNEL).setMethodCallHandler(this)
     }
@@ -32,7 +28,21 @@ class ContactPickerManager(
 
         when (call.method) {
             "openContactPicker" -> {
-                openContactPicker(result)
+                if (!permissionHandler.hasReadContactsPermission(activity)) {
+                    permissionHandler.requestReadContactsPermission(activity,
+                        ContactListManager.READ_CONTACTS_PERMISSION_CODE
+                    )
+
+                }else if(permissionHandler.hasReadContactsPermission(activity)) {
+                    openContactPicker(result)
+                }
+                else{
+                    result.error(
+                        "PERMISSION_DENIED",
+                        "Permission denied for reading contacts",
+                        null
+                    )
+                }
             }
 
             else -> result.notImplemented()
@@ -111,20 +121,20 @@ class ContactPickerManager(
         }
     }
 
-    fun hasReadContactsPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            activity,
-            android.Manifest.permission.READ_CONTACTS
-        ) == PackageManager.PERMISSION_GRANTED
-    }
-
-    fun requestReadContactsPermission() {
-        ActivityCompat.requestPermissions(
-            activity,
-            arrayOf(android.Manifest.permission.READ_CONTACTS),
-            READ_CONTACTS_PERMISSION_CODE
-        )
-    }
+//    fun hasReadContactsPermission(): Boolean {
+//        return ContextCompat.checkSelfPermission(
+//            activity,
+//            android.Manifest.permission.READ_CONTACTS
+//        ) == PackageManager.PERMISSION_GRANTED
+//    }
+//
+//    fun requestReadContactsPermission() {
+//        ActivityCompat.requestPermissions(
+//            activity,
+//            arrayOf(android.Manifest.permission.READ_CONTACTS),
+//            READ_CONTACTS_PERMISSION_CODE
+//        )
+//    }
 
     companion object {
         const val READ_CONTACTS_PERMISSION_CODE =

@@ -29,18 +29,30 @@ class _GalleryPickChannelPageState extends State<GalleryPickChannelPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Gallery Example')),
-      body: Center(
-        child: Column(
-          children: [
-            (_imagePath.isNotEmpty)
-                ? Image.file(File.fromUri(Uri.parse(_imagePath))) // Use Uri.parse to convert the path to a Uri
-                : Container(),
-            ElevatedButton(
-              onPressed: _openGallery,
-              child: const Text('Open Gallery'),
-            )
-          ],
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              (_imagePath.isNotEmpty)
+                  ? Image.file(File.fromUri(Uri.parse(
+                      _imagePath))) // Use Uri.parse to convert the path to a Uri
+                  : Center(child: Column(
+                   children: [
+                      SizedBox(height: MediaQuery.of(context).size.height*0.02),
+                      const Icon(Icons.image_not_supported, size: 100, color: Colors.grey,),
+                      SizedBox(height: MediaQuery.of(context).size.height*0.02),
+                      const Text('No image displayed'),
+                    ],
+                  )),
+            ],
+          ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _openGallery,
+        child: const Icon(Icons.image),
       ),
     );
   }

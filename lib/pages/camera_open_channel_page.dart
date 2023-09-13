@@ -37,28 +37,31 @@ class _CameraOpenChannelPageState extends State<CameraOpenChannelPage> {
         appBar: AppBar(
           title: const Text('Camera Open'),
         ),
-        body: _loadPhoto(screenWidth*0.7, screenHeight*0.7)
-    );
+        body: _loadPhoto(screenWidth * 0.7, screenHeight * 0.7),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _takePhoto,
+          child: const Icon(Icons.camera),
+        ));
   }
 
-  Widget _loadPhoto(double imageWidth, double imageHeight){
+  Widget _loadPhoto(double imageWidth, double imageHeight) {
     return SafeArea(
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton(
-              onPressed: _takePhoto,
-              child: const Text('Take Photo'),
-            ),
-            SizedBox(height: MediaQuery.of(context).size.height*0.02),
-            if (_imagePath.isNotEmpty) ...[
-              Image.file(
-                File(_imagePath),
-                width: imageWidth,
-                height: imageHeight,
-              ),
-            ],
+            SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+            _imagePath.isNotEmpty
+                ? Image.file(
+                    File(_imagePath),
+                    width: imageWidth,
+                    height: imageHeight,
+                  )
+                : const Icon(
+                    Icons.image_not_supported,
+                    color: Colors.grey,
+                    size: 100,
+                  ),
           ],
         ),
       ),

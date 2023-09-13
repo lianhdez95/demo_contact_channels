@@ -1,11 +1,8 @@
 package com.example.another_contact_channel
 
 import android.app.Activity
-import android.content.pm.PackageManager
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -20,6 +17,7 @@ class DeviceInfoManager(binaryMessenger: BinaryMessenger, private val activity: 
         private val DEVICE_INFO_CHANNEL = "com.example.device.info"
     }
 
+    private val permissionHandler: PermissionHandlerManager = PermissionHandlerManager()
     init {
         MethodChannel(binaryMessenger, DEVICE_INFO_CHANNEL).setMethodCallHandler(this)
     }
@@ -28,29 +26,29 @@ class DeviceInfoManager(binaryMessenger: BinaryMessenger, private val activity: 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when(call.method){
             "getAPIInfo" ->{
-                if (hasDeviceInfoPermissions()){
+                if (permissionHandler.hasDeviceInfoPermissions(activity)){
                     val api = getAPIInfo()
                     result.success(api)
                 } else {
-                    requestDeviceInfoPermissions()
+                    permissionHandler.requestDeviceInfoPermissions(activity, REQUEST_DEVICE_INFO_CODE)
                 }
             }
 
             "getAndroidVersionInfo" -> {
-                if (hasDeviceInfoPermissions()){
+                if (permissionHandler.hasDeviceInfoPermissions(activity)){
                     val android = getAndroidVersionInfo()
                     result.success(android)
                 } else {
-                    requestDeviceInfoPermissions()
+                    permissionHandler.requestDeviceInfoPermissions(activity, REQUEST_DEVICE_INFO_CODE)
                 }
             }
 
             "getArchitectureInfo" -> {
-                if (hasDeviceInfoPermissions()){
+                if (permissionHandler.hasDeviceInfoPermissions(activity)){
                     val architecture = getArchitectureInfo()
                     result.success(architecture)
                 } else {
-                    requestDeviceInfoPermissions()
+                    permissionHandler.requestDeviceInfoPermissions(activity, REQUEST_DEVICE_INFO_CODE)
                 }
             }
             else -> result.notImplemented()
@@ -76,16 +74,16 @@ class DeviceInfoManager(binaryMessenger: BinaryMessenger, private val activity: 
         return "Unknown"
     }
 
-    private fun hasDeviceInfoPermissions(): Boolean{
-        val permission = android.Manifest.permission.READ_PHONE_STATE
-        return ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun requestDeviceInfoPermissions(){
-        ActivityCompat.requestPermissions(
-            activity,
-            arrayOf(android.Manifest.permission.READ_PHONE_STATE),
-            REQUEST_DEVICE_INFO_CODE
-        )
-    }
+//    private fun hasDeviceInfoPermissions(): Boolean{
+//        val permission = android.Manifest.permission.READ_PHONE_STATE
+//        return ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED
+//    }
+//
+//    private fun requestDeviceInfoPermissions(){
+//        ActivityCompat.requestPermissions(
+//            activity,
+//            arrayOf(android.Manifest.permission.READ_PHONE_STATE),
+//            REQUEST_DEVICE_INFO_CODE
+//        )
+//    }
 }

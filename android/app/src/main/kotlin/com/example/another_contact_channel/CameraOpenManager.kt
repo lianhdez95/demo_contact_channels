@@ -1,16 +1,12 @@
 package com.example.another_contact_channel
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.yalantis.ucrop.UCrop
 import io.flutter.plugin.common.BinaryMessenger
@@ -36,6 +32,7 @@ class CameraManager(
 
     private var result: MethodChannel.Result? = null
     private var currentPhotoPath: String? = null
+    private val permissionHandler: PermissionHandlerManager = PermissionHandlerManager()
 
     init {
         val channel = MethodChannel(binaryMessenger, CHANNEL_NAME)
@@ -46,10 +43,10 @@ class CameraManager(
         when (call.method) {
             "openCamera" -> {
                 this.result = result
-                if (hasCameraPermission()) {
+                if (permissionHandler.hasCameraPermission(activity)) {
                     openCamera()
                 } else {
-                    requestCameraPermission()
+                    permissionHandler.requestCameraPermission(activity, REQUEST_CAMERA_PERMISSION)
                 }
             }
 
@@ -57,22 +54,6 @@ class CameraManager(
                 result.notImplemented()
             }
         }
-    }
-
-    private fun hasCameraPermission(): Boolean {
-        val permission = Manifest.permission.CAMERA
-        return ContextCompat.checkSelfPermission(
-            activity,
-            permission
-        ) == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun requestCameraPermission() {
-        ActivityCompat.requestPermissions(
-            activity,
-            arrayOf(Manifest.permission.CAMERA),
-            REQUEST_CAMERA_PERMISSION
-        )
     }
 
     private fun openCamera() {
@@ -107,23 +88,6 @@ class CameraManager(
         )
     }
 
-    // Llamado cuando se obtienen los resultados de la solicitud de permisos
-    fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        when (requestCode) {
-            REQUEST_CAMERA_PERMISSION -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    openCamera()
-                } else {
-                    this.result?.error("PERMISSION_DENIED", "Camera permission denied.", null)
-                }
-            }
-        }
-    }
-
     @SuppressLint("ResourceType")
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
@@ -149,5 +113,39 @@ class CameraManager(
         }
     }
 
+    
+    // private fun hasCameraPermission(): Boolean {
+    //     val permission = Manifest.permission.CAMERA
+    //     return ContextCompat.checkSelfPermission(
+    //         activity,
+    //         permission
+    //     ) == PackageManager.PERMISSION_GRANTED
+    // }
+
+    // private fun requestCameraPermission() {
+    //     ActivityCompat.requestPermissions(
+    //         activity,
+    //         arrayOf(Manifest.permission.CAMERA),
+    //         REQUEST_CAMERA_PERMISSION
+    //     )
+    // }
+
+
+    // Llamado cuando se obtienen los resultados de la solicitud de permisos
+    // fun onRequestPermissionsResult(
+    //     requestCode: Int,
+    //     permissions: Array<out String>,
+    //     grantResults: IntArray
+    // ) {
+    //     when (requestCode) {
+    //         REQUEST_CAMERA_PERMISSION -> {
+    //             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+    //                 openCamera()
+    //             } else {
+    //                 this.result?.error("PERMISSION_DENIED", "Camera permission denied.", null)
+    //             }
+    //         }
+    //     }
+    // }
 
 }

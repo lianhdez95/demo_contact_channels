@@ -1,17 +1,12 @@
 package com.example.another_contact_channel
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
-import android.os.Build
 import android.provider.MediaStore
-import androidx.core.app.ActivityCompat
 import com.yalantis.ucrop.UCrop
-import io.flutter.embedding.android.FlutterActivity
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -30,30 +25,22 @@ class GalleryChannel(private val binaryMessenger: BinaryMessenger, private val a
         MethodChannel(binaryMessenger, GALLERY_CHANNEL).setMethodCallHandler(this)
     }
 
+    private val permissionHandler: PermissionHandlerManager = PermissionHandlerManager()
+
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "openGallery" -> {
-                this.result = result
-                checkGalleryPermission(activity)
+                if (!permissionHandler.hasGalleryPermissions(activity)) {
+                    permissionHandler.requestGalleryPermissions(
+                        activity,
+                        GALLERY_REQUEST_CODE
+                    )
+                    this.result = result
+                } else {
+                    openGallery(activity)
+                    this.result = result
+                }
             }
-
-            else -> result.notImplemented()
-        }
-    }
-
-    private fun checkGalleryPermission(activity: Activity) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (activity.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                openGallery(activity)
-            } else {
-                ActivityCompat.requestPermissions(
-                    activity,
-                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
-                    GALLERY_REQUEST_CODE
-                )
-            }
-        } else {
-            openGallery(activity)
         }
     }
 
@@ -65,12 +52,13 @@ class GalleryChannel(private val binaryMessenger: BinaryMessenger, private val a
 
     @SuppressLint("ResourceType")
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == GALLERY_REQUEST_CODE && resultCode == FlutterActivity.RESULT_OK && data != null) {
-            val result = this.getResult()
+        if (requestCode == GALLERY_REQUEST_CODE && resultCode == Activity.RESULT_OK && data != null) {
+            val result = this.result
 
             val uri = data.data
             val filePathColumn = arrayOf(MediaStore.Images.Media.DATA)
-            val cursor = activity.contentResolver.query(uri!!, filePathColumn, null, null, null)
+            val cursor =
+                activity.contentResolver.query(uri!!, filePathColumn, null, null, null)
 
             if (cursor != null && cursor.moveToFirst()) {
                 val columnIndex: Int = cursor.getColumnIndex(filePathColumn[0])
@@ -108,8 +96,23 @@ class GalleryChannel(private val binaryMessenger: BinaryMessenger, private val a
         // Pass the result instance to UCrop
         this.result = result
     }
-
-    fun getResult(): Result? {
-        return result
-    }
 }
+
+
+
+
+    //    private fun checkGalleryPermission(activity: Activity) {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//            if (activity.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+//                openGallery(activity)
+//            } else {
+//                ActivityCompat.requestPermissions(
+//                    activity,
+//                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+//                    GALLERY_REQUEST_CODE
+//                )
+//            }
+//        } else {
+//            openGallery(activity)
+//        }
+//    }

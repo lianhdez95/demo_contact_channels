@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../widgets/custom_label.dart';
+
 class ContactPickerChannelPage extends StatefulWidget {
   const ContactPickerChannelPage({super.key});
 
@@ -89,25 +91,6 @@ class _ContactPickerChannelPageState extends State<ContactPickerChannelPage> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget customLabel(String text, Icon icon) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        icon,
-        Card(
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-              side: const BorderSide(color: Colors.blue)),
-          child: Container(
-            width: 200,
-            padding: const EdgeInsets.all(10.0),
-            child: Text(text, style: const TextStyle(fontSize: 20)),
-          ),
-        ),
-      ],
     );
   }
 }

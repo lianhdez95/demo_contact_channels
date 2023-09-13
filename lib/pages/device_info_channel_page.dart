@@ -1,6 +1,9 @@
+import 'package:another_contact_channel/widgets/custom_card.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import '../widgets/custom_leading.dart';
 
 class DeviceInfoChannelPage extends StatefulWidget {
   const DeviceInfoChannelPage({super.key});
@@ -12,6 +15,7 @@ class DeviceInfoChannelPage extends StatefulWidget {
 class _DeviceInfoChannelPageState extends State<DeviceInfoChannelPage> {
   final MethodChannel _deviceInfoChannel =
   const MethodChannel('com.example.device.info');
+
   String _api = '';
   String _androidVersion = '';
   String _architecture = '';
@@ -118,29 +122,6 @@ class _DeviceInfoChannelPageState extends State<DeviceInfoChannelPage> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget customLeading(Icon icon) {
-    return Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          icon,
-          const SizedBox(width: 20,)
-        ]
-    );
-  }
-
-  Widget customCard(String text) {
-    return Card(
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: const BorderSide(color: Colors.blue)),
-      child: Container(
-        width: 150,
-        padding: const EdgeInsets.all(10.0),
-        child: Text(text, style: const TextStyle(fontSize: 20)),
       ),
     );
   }
