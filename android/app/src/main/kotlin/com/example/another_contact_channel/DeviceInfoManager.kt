@@ -26,29 +26,29 @@ class DeviceInfoManager(binaryMessenger: BinaryMessenger, private val activity: 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when(call.method){
             "getAPIInfo" ->{
-                if (permissionHandler.hasDeviceInfoPermissions(activity)){
+                if (permissionHandler.hasReadPhonePermissions(activity)){
                     val api = getAPIInfo()
                     result.success(api)
                 } else {
-                    permissionHandler.requestDeviceInfoPermissions(activity, REQUEST_DEVICE_INFO_CODE)
+                    permissionHandler.requestReadPhonePermissions(activity, REQUEST_DEVICE_INFO_CODE)
                 }
             }
 
             "getAndroidVersionInfo" -> {
-                if (permissionHandler.hasDeviceInfoPermissions(activity)){
+                if (permissionHandler.hasReadPhonePermissions(activity)){
                     val android = getAndroidVersionInfo()
                     result.success(android)
                 } else {
-                    permissionHandler.requestDeviceInfoPermissions(activity, REQUEST_DEVICE_INFO_CODE)
+                    permissionHandler.requestReadPhonePermissions(activity, REQUEST_DEVICE_INFO_CODE)
                 }
             }
 
             "getArchitectureInfo" -> {
-                if (permissionHandler.hasDeviceInfoPermissions(activity)){
+                if (permissionHandler.hasReadPhonePermissions(activity)){
                     val architecture = getArchitectureInfo()
                     result.success(architecture)
                 } else {
-                    permissionHandler.requestDeviceInfoPermissions(activity, REQUEST_DEVICE_INFO_CODE)
+                    permissionHandler.requestReadPhonePermissions(activity, REQUEST_DEVICE_INFO_CODE)
                 }
             }
             else -> result.notImplemented()
@@ -74,12 +74,12 @@ class DeviceInfoManager(binaryMessenger: BinaryMessenger, private val activity: 
         return "Unknown"
     }
 
-//    private fun hasDeviceInfoPermissions(): Boolean{
+//    private fun hasReadPhonePermissions(): Boolean{
 //        val permission = android.Manifest.permission.READ_PHONE_STATE
 //        return ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED
 //    }
 //
-//    private fun requestDeviceInfoPermissions(){
+//    private fun requestReadPhonePermissions(){
 //        ActivityCompat.requestPermissions(
 //            activity,
 //            arrayOf(android.Manifest.permission.READ_PHONE_STATE),

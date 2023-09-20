@@ -1,4 +1,4 @@
-package com.example.another_contact_channel
+ package com.example.another_contact_channel
 
 import android.app.Activity
 import android.Manifest
@@ -39,12 +39,12 @@ class PermissionHandlerManager{
         )
     }
 
-    fun hasDeviceInfoPermissions(activity: Activity): Boolean{
+    fun hasReadPhonePermissions(activity: Activity): Boolean{
         val permission = android.Manifest.permission.READ_PHONE_STATE
         return ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED
     }
 
-    fun requestDeviceInfoPermissions(activity: Activity, requestCode: Int){
+    fun requestReadPhonePermissions(activity: Activity, requestCode: Int){
         ActivityCompat.requestPermissions(
             activity,
             arrayOf(Manifest.permission.READ_PHONE_STATE),

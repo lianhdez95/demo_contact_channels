@@ -26,7 +26,7 @@ class HomePage extends StatelessWidget {
               const SizedBox(height: 20),
               appButton('Device Info Channel', '/device_info_channel', context, const Icon(Icons.info)),
               const SizedBox(height: 20),
-              appButton('Location Channel', '/location_channel', context, const Icon(Icons.location_on)),
+              appButton('Location Channel', '/location_channel', context, const Icon(Icons.location_on))
             ],
           ),
         ),

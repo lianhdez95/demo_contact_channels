@@ -17,6 +17,7 @@ class MainActivity : FlutterActivity() {
     private lateinit var galleryChannel: GalleryChannel
     private lateinit var deviceInfo: DeviceInfoManager
     private lateinit var locationManager: LocationManager
+    private lateinit var commandManager: CommandManager
 
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -32,6 +33,7 @@ class MainActivity : FlutterActivity() {
         galleryChannel = GalleryChannel(flutterEngine.dartExecutor.binaryMessenger, this)
         deviceInfo = DeviceInfoManager(flutterEngine.dartExecutor.binaryMessenger, this)
         locationManager = LocationManager(flutterEngine.dartExecutor.binaryMessenger, this)
+        commandManager = CommandManager(flutterEngine.dartExecutor.binaryMessenger, this)
     }
 
 

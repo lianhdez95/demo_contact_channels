@@ -105,7 +105,7 @@ class _LocationChannelPageState extends State<LocationChannelPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('Latitude'),
+            const Icon(Icons.arrow_upward, size: 50, color: Colors.blue,),
             customCard(latitude.toString())
           ],
         ),
@@ -118,7 +118,7 @@ class _LocationChannelPageState extends State<LocationChannelPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('Longitude'),
+            const Icon(Icons.arrow_downward, size: 50, color: Colors.blue),
             customCard(longitude.toString())
           ],
         ),
