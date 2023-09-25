@@ -12,21 +12,21 @@ class HomePage extends StatelessWidget {
           padding: const EdgeInsets.all(50),
           child: Column(
             children: [
-              appButton('Contact Channel', '/contact_channel', context, const Icon(Icons.account_box)),
+              _appButton('Contact Channel', '/contact_channel', context, const Icon(Icons.account_box)),
               const SizedBox(height: 20),
-              appButton('Contact Pick Channel', '/contact_picker_channel', context, const Icon(Icons.account_box)),
+              _appButton('Contact Pick Channel', '/contact_picker_channel', context, const Icon(Icons.account_box)),
               const SizedBox(height: 20),
-              appButton('Battery Level Channel', '/battery_channel', context, const Icon(Icons.battery_alert_sharp)),
+              _appButton('Battery Level Channel', '/battery_channel', context, const Icon(Icons.battery_alert_sharp)),
               const SizedBox(height: 20),
-              appButton('Connection Type Channel', '/connection_channel', context, const Icon(Icons.network_check)),
+              _appButton('Connection Type Channel', '/connection_channel', context, const Icon(Icons.network_check)),
               const SizedBox(height: 20),
-              appButton('Gallery Channel', '/gallery_pick_channel', context, const Icon(Icons.image)),
+              _appButton('Gallery Channel', '/gallery_pick_channel', context, const Icon(Icons.image)),
               const SizedBox(height: 20),
-              appButton('Camera Channel', '/camera_open_channel', context, const Icon(Icons.camera_alt)),
+              _appButton('Camera Channel', '/camera_open_channel', context, const Icon(Icons.camera_alt)),
               const SizedBox(height: 20),
-              appButton('Device Info Channel', '/device_info_channel', context, const Icon(Icons.info)),
+              _appButton('Device Info Channel', '/device_info_channel', context, const Icon(Icons.info)),
               const SizedBox(height: 20),
-              appButton('Location Channel', '/location_channel', context, const Icon(Icons.location_on))
+              _appButton('Location Channel', '/location_channel', context, const Icon(Icons.location_on))
             ],
           ),
         ),
@@ -34,7 +34,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget appButton(String text, String route, BuildContext context, Icon icon) {
+  Widget _appButton(String text, String route, BuildContext context, Icon icon) {
     return ElevatedButton(
       onPressed: () {
         // Agrega el código para navegar a la ruta correspondiente
